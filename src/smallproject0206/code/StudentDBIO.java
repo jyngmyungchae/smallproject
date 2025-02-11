@@ -11,4 +11,9 @@ public class StudentDBIO extends ObjectIO implements StudentIO{
 
     @Override
     public void outputStudent() {}
+
+    @Override
+    public void searchStudentByName() {
+
+    }
 }
