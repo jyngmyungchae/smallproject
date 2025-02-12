@@ -1,36 +1,84 @@
 package smallproject0206.code;
 
-public class Student {
+import java.util.ArrayList;
+import java.util.List;
 
+public class Student {
 
     private String sno;
     private String name;
-    private int korean;
-    private int english;
-    private int math;
-    private int science;
-
+    private List<Subject> subjects;
 
     private Student(StudentBuilder builder) {
         this.sno = builder.sno;
         this.name = builder.name;
-        this.korean = builder.korean;
-        this.english = builder.english;
-        this.math = builder.math;
-        this.science = builder.science;
+        this.subjects = builder.subjects;
     }
 
     public String getName() {
         return name;
     }
 
+    public List<Subject> getSubjects() {
+        return subjects;
+    }
+
+    public int getTotal() {
+        return subjects.stream().mapToInt(Subject::getScore).sum();
+    }
+
+    public double getAverage() {
+        return subjects.isEmpty() ? 0 : getTotal() / (double) subjects.size();
+    }
+
+    public String computeGrade() {
+        double avg = getAverage();
+        if (avg >= 90) return "A";
+        else if (avg >= 80) return "B";
+        else if (avg >= 70) return "C";
+        else if (avg >= 60) return "D";
+        else return "F";
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("sno='").append(sno).append("', ");
+        sb.append("name='").append(name).append("', ");
+        sb.append("subjects=").append(subjects).append(", ");
+        sb.append("total=").append(getTotal()).append(", ");
+        sb.append("average=").append(getAverage()).append(", ");
+        sb.append("grade=").append(computeGrade());
+        return sb.toString();
+    }
+
+    public static class Subject {
+        private String name;
+        private int score;
+
+        public Subject(String name, int score) {
+            this.name = name;
+            this.score = score;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        @Override
+        public String toString() {
+            return name + ":" + score;
+        }
+    }
+
     public static class StudentBuilder {
         private String sno;
         private String name;
-        private int korean;
-        private int english;
-        private int math;
-        private int science;
+        private List<Subject> subjects = new ArrayList<>();
 
         public StudentBuilder sno(String sno) {
             this.sno = sno;
@@ -42,60 +90,13 @@ public class Student {
             return this;
         }
 
-        public StudentBuilder korean(int korean) {
-            this.korean = korean;
-            return this;
-        }
-
-        public StudentBuilder english(int english) {
-            this.english = english;
-            return this;
-        }
-
-        public StudentBuilder math(int math) {
-            this.math = math;
-            return this;
-        }
-
-        public StudentBuilder science(int science) {
-            this.science = science;
+        public StudentBuilder addSubject(String subjectName, int score) {
+            this.subjects.add(new Subject(subjectName, score));
             return this;
         }
 
         public Student build() {
             return new Student(this);
         }
-
-
     }
-    public int getTotal() {
-        return korean + english + math + science;
-    }
-
-    public double getAverage() {
-        return getTotal() / 4.0;
-    }
-
-    public String computeGrade() {
-        if (getAverage() >= 90) return "A";
-        else if (getAverage() == 80) return "B";
-        else if (getAverage() == 70) return "D";
-        else if (getAverage() == 60) return "D";
-        else return "F";
-    }
-
-
-    @Override
-    public String toString() {
-        return  "sno='" + sno + '\'' +
-                ", name='" + name + '\'' +
-                ", korean=" + korean +
-                ", english=" + english +
-                ", math=" + math +
-                ", science=" + science +
-                ", total=" + getTotal()+
-                ", average=" + getAverage()+
-                ", grade=" + computeGrade();
-    }
-
 }

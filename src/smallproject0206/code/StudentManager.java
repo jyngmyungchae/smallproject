@@ -61,27 +61,33 @@ public class StudentManager extends StudentDBIO {
             }
         } while (!NAME_PATTERN.matcher(name).matches());
 
-        System.out.print("korean: ");
-        int korean = scanner.nextInt();
-        System.out.print("english: ");
-        int english = scanner.nextInt();
-        System.out.print("math: ");
-        int math = scanner.nextInt();
-        System.out.print("science: ");
-        int science = scanner.nextInt();
-
-        Student student = new Student.StudentBuilder()
+        // StudentBuilder를 사용해 학생 정보를 생성
+        Student.StudentBuilder builder = new Student.StudentBuilder()
                 .sno(sno)
-                .name(name)
-                .korean(korean)
-                .english(english)
-                .math(math)
-                .science(science)
-                .build();
+                .name(name);
 
-        students.add(student);
+        // 과목별 점수를 입력받아 추가
+        builder.addSubject("korean", getValidatedScore("korean"));
+        builder.addSubject("english", getValidatedScore("english"));
+        builder.addSubject("math", getValidatedScore("math"));
+        builder.addSubject("science", getValidatedScore("science"));
+
+        // 빌드 후 students 리스트에 추가
+        students.add(builder.build());
+
         System.out.println("success");
         run();
+    }
+    private int getValidatedScore(String subjectName) {
+        int score;
+        do {
+            System.out.print(subjectName + ": ");
+            score = scanner.nextInt();
+            if (score < 0 || score > 100) {
+                System.out.println("점수는 0에서 100 사이여야 합니다. 다시 입력하세요.");
+            }
+        } while (score < 0 || score > 100);
+        return score;
     }
 
     @Override
