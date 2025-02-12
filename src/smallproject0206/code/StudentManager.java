@@ -116,4 +116,5 @@ public class StudentManager extends StudentDBIO {
     private boolean containsIgnoreCase(String name, String searchName) {
         return name.toLowerCase().contains(searchName.toLowerCase());
     }
+
 }
