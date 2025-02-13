@@ -24,8 +24,12 @@ public class Student {
     }
 
     public int getTotal() {
-        return subjects.stream().mapToInt(Subject::getScore).sum();
-    }
+            int total = 0;
+            for (Subject subject : subjects) {
+                total += subject.getScore();
+            }
+            return total;
+        }
 
     public double getAverage() {
         return subjects.isEmpty() ? 0 : getTotal() / (double) subjects.size();
@@ -52,6 +56,7 @@ public class Student {
         return sb.toString();
     }
 
+
     public static class Subject {
         private String name;
         private int score;
@@ -67,11 +72,6 @@ public class Student {
 
         public int getScore() {
             return score;
-        }
-
-        @Override
-        public String toString() {
-            return name + ":" + score;
         }
     }
 
@@ -98,5 +98,8 @@ public class Student {
         public Student build() {
             return new Student(this);
         }
+    }
+    public String getSno() {
+        return sno;
     }
 }
