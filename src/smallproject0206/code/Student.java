@@ -73,6 +73,10 @@ public class Student {
         public int getScore() {
             return score;
         }
+        @Override
+        public String toString() {
+            return name + ":" + score;
+        }
     }
 
     public static class StudentBuilder {

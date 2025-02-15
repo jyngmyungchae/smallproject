@@ -1,180 +1,255 @@
 package smallproject0206.code;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class StudentManager extends StudentDBIO {
 
-    Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in);
+    private final StudentDAO studentDAO = new StudentDAO();
+    private static final Pattern SNO_PATTERN = Pattern.compile("^\\d{10}$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣]+$");
+    private final Map<Integer, Runnable> menuChoice = new HashMap<>();
 
-    private static final Pattern SNO_PATTERN = Pattern.compile("^\\d{6}$");  // 학번은 6자리 숫자
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣]+$"); // 한글 및 영문 허용
+    public StudentManager() {
+        mainMenu();
+    }
+
+    private void mainMenu() {
+        menuChoice.put(1, () -> this.inputStudent());
+        menuChoice.put(2, this::deleteStudentInfo);
+        menuChoice.put(3, this::searchBySno);
+        menuChoice.put(4, this::sortStudents);
+        menuChoice.put(5, this::exitApp);
+    }
+
+    private void exitApp() {
+        System.exit(0);
+    }
 
     public void run() {
+        while (true) {
+            printMenu();
+            String input = scanner.nextLine().trim();
+
+            int choice;
+
+            try {
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                continue;
+            }
+            Runnable action = menuChoice.get(choice);
+            if (action != null) {
+                action.run();
+            } else {
+                System.out.println("재입력");
+            }
+        }
+    }
+
+    private void printMenu() {
         System.out.println("1. add student info");
         System.out.println("2. view student info");
         System.out.println("3. search student info");
         System.out.println("4. sort student info");
         System.out.println("5. exit");
         System.out.println("choice menu");
+    }
 
-        int menu = -1; // 기본값 설정
-        try {
-            String input = scanner.nextLine().trim(); // 입력받기
-            menu = Integer.parseInt(input); // 숫자로 변환
-        } catch (NumberFormatException e) {
-            System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+    // 문자열검증
+    private String readValidatedString(String prompt, Pattern pattern, String errorMessage) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            if (pattern.matcher(input).matches()) {
+                return input;
+            } else {
+                System.out.println(errorMessage);
+            }
         }
-        scanner.nextLine();  // 개행 문자 처리
-        switch (menu) {
-            case 1:
-                inputStudent();
-                break;
-            case 2:
-                outputStudent();
-                break;
-            case 3:
-                searchStudentByName();
-                break;
-            case 4:
-                sortStudents();
-                break;
-            case 5:
-                return;
-            default:
-                System.out.println("재입력");
+    }
+    // 숫자 검증
+    private int readValidatedInt(String prompt, int min, int max) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                int value = Integer.parseInt(input);
+                if (value >= min && value <= max) {
+                    return value;
+                } else {
+                    System.out.println(min + "~" + max);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("숫자를 입력하세요.");
+            }
         }
     }
 
     @Override
     public void inputStudent() {
         System.out.println("add");
+        String sno = readValidatedString("sno (10자리수): ", SNO_PATTERN, "정확히 10자리 수 재입력");
 
-        String sno;
-        do {
-            System.out.print("sno (6자리수): ");
-            sno = scanner.next();
-            if (!SNO_PATTERN.matcher(sno).matches()) {
-                System.out.println("정확히 6자리 수 재입력");
+        Student existingStudent = studentDAO.findStudentBySno(sno);
+        if (existingStudent == null) {
+            // 신규는 모든정보 입력
+            String name = readValidatedString("name (한, 영): ", NAME_PATTERN, "한, 영문으로 재입력");
+            int korean = readValidatedInt("korean: ", 0, 100);
+            int english = readValidatedInt("english: ", 0, 100);
+            int math = readValidatedInt("math: ", 0, 100);
+            int science = readValidatedInt("science: ", 0, 100);
+
+            Student student = new Student.StudentBuilder()
+                    .sno(sno)
+                    .name(name)
+                    .addSubject("korean", korean)
+                    .addSubject("english", english)
+                    .addSubject("math", math)
+                    .addSubject("science", science)
+                    .build();
+            studentDAO.save(student);
+            students.add(student);
+        } else {
+            //이미 등록된 학번은 수정
+            System.out.println("already regist sno: " + existingStudent.getName());
+            System.out.println("1.edit all info");
+            System.out.println("2.edit subject score");
+            System.out.println("3.exit add");
+            String option = scanner.nextLine().trim();
+            if ("1".equals(option)) {
+                String name = readValidatedString("name (한, 영): ", NAME_PATTERN, "한, 영문으로 재입력");
+                int korean = readValidatedInt("korean: ", 0, 100);
+                int english = readValidatedInt("english: ", 0, 100);
+                int math = readValidatedInt("math: ", 0, 100);
+                int science = readValidatedInt("science: ", 0, 100);
+
+                Student student = new Student.StudentBuilder()
+                        .sno(sno)
+                        .name(name)
+                        .addSubject("korean", korean)
+                        .addSubject("english", english)
+                        .addSubject("math", math)
+                        .addSubject("science", science)
+                        .build();
+                studentDAO.updateStudent(student);
+                updateInMemoryStudent(student);
+            } else if ("2".equals(option)) {
+                int korean = readValidatedInt("korean: ", 0, 100);
+                int english = readValidatedInt("english: ", 0, 100);
+                int math = readValidatedInt("math: ", 0, 100);
+                int science = readValidatedInt("science: ", 0, 100);
+
+                Student student = new Student.StudentBuilder()
+                        .sno(sno)
+                        .name(existingStudent.getName())
+                        .addSubject("korean", korean)
+                        .addSubject("english", english)
+                        .addSubject("math", math)
+                        .addSubject("science", science)
+                        .build();
+                studentDAO.updateStudentScores(student);
+                updateInMemoryStudent(student);
+            } else if ("3".equals(option)){
+                System.out.println("exit");
+                return;
+            } else {
+                System.out.println("잘못된 입력");
             }
-        } while (!SNO_PATTERN.matcher(sno).matches());
-
-        String name;
-        do {
-            System.out.print("name (한, 영): ");
-            name = scanner.next();
-            if (!NAME_PATTERN.matcher(name).matches()) {
-                System.out.println("한, 영문으로 재입력");
-            }
-        } while (!NAME_PATTERN.matcher(name).matches());
-
-        Student.StudentBuilder builder = new Student.StudentBuilder()
-                .sno(sno)
-                .name(name);
-
-        builder.addSubject("korean", getValidatedScore("korean"));
-        builder.addSubject("english", getValidatedScore("english"));
-        builder.addSubject("math", getValidatedScore("math"));
-        builder.addSubject("science", getValidatedScore("science"));
-
-        students.add(builder.build());
-
+        }
         System.out.println("success");
-        run();
     }
 
-    private int getValidatedScore(String subjectName) {
-        int score;
-        do {
-            System.out.print(subjectName + ": ");
-            score = scanner.nextInt();
-            if (score < 0 || score > 100) {
-                System.out.println("0~100");
-            }
-        } while (score < 0 || score > 100);
-        return score;
+    // 메모리 내 리스트 업데이트 (동일 학번 학생 제거 후 새 객체 추가)
+    private void updateInMemoryStudent(Student student) {
+        students.removeIf(s -> s.getSno().equals(student.getSno()));
+        students.add(student);
     }
 
     @Override
     public void outputStudent() {
-        for (Student student : students) {
-            System.out.println(student);
+        studentDAO.getAllStudents().forEach(System.out::println);
+    }
+
+    public void deleteStudentInfo() {
+        outputStudent();
+
+        System.out.print("삭제할 학생의 학번을 입력 (삭제하지 않으려면 그냥 엔터): ");
+        String deleteSno = scanner.nextLine().trim();
+
+        if (!deleteSno.isEmpty()) {
+            deleteStudent(deleteSno);
+        } else {
+            System.out.println("삭제 없이 종료합니다");
         }
-        run();
+    }
+
+    private void deleteStudent(String sno) {
+        studentDAO.delete(sno);
+        students.removeIf(s -> s.getSno().equals(sno));
+        System.out.println("삭제 완료");
     }
 
     @Override
-    public void searchStudentByName() {
-        System.out.print("enter (이름기준검색) :");
-        String searchName = scanner.nextLine().trim();
+    public void searchBySno() {
+        System.out.print("enter (sno 기준검색) :");
+        String searchSno = scanner.nextLine().trim();
 
-        List<Student> foundStudents = students.stream()
-                .filter(s -> containsIgnoreCase(s.getName(), searchName)) // 부분 검색 (대소문자 구분 없이)
-                .collect(Collectors.toList());
+        Student foundStudent = studentDAO.findStudentBySno(searchSno);
 
-        if (foundStudents.isEmpty()) {
-            System.out.println("no" + searchName);
+        if (foundStudent == null) {
+            System.out.println("no " + searchSno);
         } else {
             System.out.println("result");
-            for (Student student : foundStudents) {
-                System.out.println(student);
-            }
+            System.out.println(foundStudent);
         }
-        System.out.println();
-        run();
     }
 
-    private boolean containsIgnoreCase(String name, String searchName) {
-        return name.toLowerCase().contains(searchName.toLowerCase());
-    }
-
-    private void sortStudents() {
+    public void sortStudents() {
         System.out.println("Select sorting criteria:");
         System.out.println("1. Sort by total score ");
         System.out.println("2. Sort by sno ");
+        String option = scanner.nextLine().trim();
 
-        int sortChoice = scanner.nextInt();
-        scanner.nextLine(); // 개행 문자 처리
-
-        switch (sortChoice) {
-            case 1:
-                sortByTotal(students); // 총점 기준 정렬
-                break;
-            case 2:
-                sortBySno(students); // 학번 기준 정렬
-                break;
-            default:
-                System.out.println("Invalid choice. Returning to main menu.");
-                run();
-                return;
+        int sortChoice;
+        try {
+            sortChoice = Integer.parseInt(option);
+        } catch (NumberFormatException e) {
+            System.out.println("잘못된 입력");
+            return;
         }
+
+        List<Student> studentList = studentDAO.getAllStudents();
+        if (studentList.isEmpty()) {
+            System.out.println("DB에 저장된 학생 데이터가 없습니다.");
+            return;
+        }
+
+        Map<Integer, Runnable> sortActions = new HashMap<>();
+        sortActions.put(1, () -> sortByTotal(studentList));
+        sortActions.put(2, () -> sortBySno(studentList));
+
+        Runnable sortAction = sortActions.get(sortChoice);
+        if (sortAction == null) {
+            System.out.println("잘못된 입력");
+            return;
+        }
+        sortAction.run();
 
         System.out.println("Sorted Students:");
-        for (Student student : students) {
-            System.out.println(student);
-        }
-        run();
+        studentList.forEach(System.out::println);
     }
 
     @Override
-    public void sortBySno(List<Student> students) {
-        students.sort(Comparator.comparing(Student::getSno)); // 학번 오름차순 정렬
-        System.out.println("Sorted by sno:");
-        for (Student student : students) {
-            System.out.println(student);
-        }
-    }
-
-    @Override
-    public void sortByTotal(List<Student> students) {
-        students.sort(Comparator.comparingInt(Student::getTotal).reversed()); // 총점 기준 내림차순 정렬
+    public void sortByTotal(List<Student> studentList) {
+        studentList.sort(Comparator.comparingInt(Student::getTotal).reversed());
         System.out.println("Sorted by total score (descending):");
-        for (Student student : students) {
-            System.out.println(student);
-        }
+    }
+    @Override
+    public void sortBySno(List<Student> studentList) {
+        studentList.sort(Comparator.comparing(Student::getSno));
+        System.out.println("Sorted by sno:");
     }
 }

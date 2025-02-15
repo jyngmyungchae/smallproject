@@ -13,7 +13,7 @@ public class StudentDBIO extends ObjectIO implements StudentIO{
     public void outputStudent() {}
 
     @Override
-    public void searchStudentByName() {}
+    public void searchBySno() {}
 
     @Override
     public void sortByTotal(List<Student> students) {}
