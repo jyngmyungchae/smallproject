@@ -11,42 +11,18 @@ public class StudentManager extends StudentDBIO {
     private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣]+$");
     private final Map<Integer, Runnable> menuChoice = new HashMap<>();
 
+    //객체 생성할때 mainMenu()호출해서 동작을 초기화함
+    //메인메서드에서 객체 생성하구 manager.run()실행 --> mainmenu()와 run()이 결합하는 느낌
     public StudentManager() {
         mainMenu();
     }
-
+    // 각 메뉴 번호와 실행할 작업을 menuChoice 맵에 등록
     private void mainMenu() {
-        menuChoice.put(1, () -> this.inputStudent());
-        menuChoice.put(2, this::deleteStudentInfo);
+        menuChoice.put(1, () -> this.inputStudent()); //람다
+        menuChoice.put(2, this::outputStudent); //메서드 참조
         menuChoice.put(3, this::searchBySno);
         menuChoice.put(4, this::sortStudents);
         menuChoice.put(5, this::exitApp);
-    }
-
-    private void exitApp() {
-        System.exit(0);
-    }
-
-    public void run() {
-        while (true) {
-            printMenu();
-            String input = scanner.nextLine().trim();
-
-            int choice;
-
-            try {
-                choice = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
-                continue;
-            }
-            Runnable action = menuChoice.get(choice);
-            if (action != null) {
-                action.run();
-            } else {
-                System.out.println("재입력");
-            }
-        }
     }
 
     private void printMenu() {
@@ -57,20 +33,44 @@ public class StudentManager extends StudentDBIO {
         System.out.println("5. exit");
         System.out.println("choice menu");
     }
+    // printmenu(), 사용자 입력받고 해당 메뉴 실행하는 작업수행
+    public void run() {
+        while (true) {
+            printMenu();
+            String input = scanner.nextLine().trim(); // 입력받고
 
-    // 문자열검증
+            int choice;
+
+            try {
+                choice = Integer.parseInt(input); // string -> int 파싱
+                /* str입력받고 int로 파싱할거면 int로 입력받으면 안되나요? 예외처리가 까다로워짐 */
+            } catch (NumberFormatException e) { //잘못된 입력 잡아내기
+                System.out.println("잘못된 입력입니다. 숫자를 입력하세요.");
+                continue;
+            }
+            Runnable action = menuChoice.get(choice); // 입력값 대응 Runnable
+            if (action != null) {
+                action.run();
+            } else {
+                System.out.println("재입력");
+            }
+        }
+    }
+
+    // 입력 검증 메서드
+    // 기존에 input()에서 조건문 통해 패턴 검사하는 방식이었는데 분리함
     private String readValidatedString(String prompt, Pattern pattern, String errorMessage) {
         while (true) {
-            System.out.print(prompt);
+            System.out.print(prompt); // 프롬프트 출력
             String input = scanner.nextLine().trim();
-            if (pattern.matcher(input).matches()) {
+            if (pattern.matcher(input).matches()) { // 정규식 패턴 검사
                 return input;
             } else {
                 System.out.println(errorMessage);
             }
         }
     }
-    // 숫자 검증
+
     private int readValidatedInt(String prompt, int min, int max) {
         while (true) {
             System.out.print(prompt);
@@ -88,20 +88,23 @@ public class StudentManager extends StudentDBIO {
         }
     }
 
+    // 1. add menu
+    // 신규 -> 정보입력, 기존 등록 -> edit all or edit scroe or exit 선택
     @Override
     public void inputStudent() {
         System.out.println("add");
-        String sno = readValidatedString("sno (10자리수): ", SNO_PATTERN, "정확히 10자리 수 재입력");
+        String sno = readValidatedString(
+                "sno (10자리수): ", SNO_PATTERN, "정확히 10자리 수 재입력");
 
-        Student existingStudent = studentDAO.findStudentBySno(sno);
-        if (existingStudent == null) {
-            // 신규는 모든정보 입력
+        Student existingStudent = studentDAO.findStudentBySno(sno); // sno 입력값이 db에 존재하는지 확인하는 메서드 호출
+        if (existingStudent == null) { //존재하지 않으면
             String name = readValidatedString("name (한, 영): ", NAME_PATTERN, "한, 영문으로 재입력");
             int korean = readValidatedInt("korean: ", 0, 100);
             int english = readValidatedInt("english: ", 0, 100);
             int math = readValidatedInt("math: ", 0, 100);
             int science = readValidatedInt("science: ", 0, 100);
 
+            //빌더 패턴 통한 객체 생성
             Student student = new Student.StudentBuilder()
                     .sno(sno)
                     .name(name)
@@ -168,14 +171,16 @@ public class StudentManager extends StudentDBIO {
         students.add(student);
     }
 
+    //2. view menu
+    //db에 저장된 학생정보를 불러와서 출력하고 delete메서드 호출
     @Override
     public void outputStudent() {
         studentDAO.getAllStudents().forEach(System.out::println);
+        deleteStudentInfo();
     }
 
+    //삭제 메뉴 메서드
     public void deleteStudentInfo() {
-        outputStudent();
-
         System.out.print("삭제할 학생의 학번을 입력 (삭제하지 않으려면 그냥 엔터): ");
         String deleteSno = scanner.nextLine().trim();
 
@@ -186,12 +191,14 @@ public class StudentManager extends StudentDBIO {
         }
     }
 
+    //db와 메모리 데이터 삭제
     private void deleteStudent(String sno) {
         studentDAO.delete(sno);
-        students.removeIf(s -> s.getSno().equals(sno));
+        students.removeIf(s -> s.getSno().equals(sno)); //removeIf사용해서 조건에 맞는 객체 삭제
         System.out.println("삭제 완료");
     }
 
+    // 3.search menu
     @Override
     public void searchBySno() {
         System.out.print("enter (sno 기준검색) :");
@@ -207,8 +214,9 @@ public class StudentManager extends StudentDBIO {
         }
     }
 
+    // 4. sort menu
     public void sortStudents() {
-        System.out.println("Select sorting criteria:");
+        System.out.println("select");
         System.out.println("1. Sort by total score ");
         System.out.println("2. Sort by sno ");
         String option = scanner.nextLine().trim();
@@ -221,7 +229,7 @@ public class StudentManager extends StudentDBIO {
             return;
         }
 
-        List<Student> studentList = studentDAO.getAllStudents();
+        List<Student> studentList = studentDAO.getAllStudents(); //입력된 sno 학생 정보를 List<Student> 로 불러옴
         if (studentList.isEmpty()) {
             System.out.println("DB에 저장된 학생 데이터가 없습니다.");
             return;
@@ -241,7 +249,7 @@ public class StudentManager extends StudentDBIO {
         System.out.println("Sorted Students:");
         studentList.forEach(System.out::println);
     }
-
+    //정렬 기능 수행하는 메서드
     @Override
     public void sortByTotal(List<Student> studentList) {
         studentList.sort(Comparator.comparingInt(Student::getTotal).reversed());
@@ -251,5 +259,9 @@ public class StudentManager extends StudentDBIO {
     public void sortBySno(List<Student> studentList) {
         studentList.sort(Comparator.comparing(Student::getSno));
         System.out.println("Sorted by sno:");
+    }
+
+    private void exitApp() {
+        System.exit(0); //jvm 종료 표준 메서드
     }
 }

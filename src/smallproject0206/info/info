@@ -1,0 +1,15 @@
+Student 클래스
+'student'의 정보 (sno,name,subject)와 이 데이터를 바탕으로 한 계산(total,avg,grade)을 관리
+과목들은 클래스 내부 subject 클래스로 정의함
+빌더패턴 이용해서 학생정보 객체 생성 복잡성을 줄임
+
+StudentDAO 클래스
+DB와의 연동을 담당
+주요 기능은 db연결을 관리하고, crud(create,read,update,delete)작업을 함
+
+student, studentdao 클래스를 분리한 이유는
+student클래스는 학생 데이터를 표현하고, studentdao는 데이터 저장 및 조회와 관련된 작업에 집중시킴
+그로인한 효과는 각 클래스 내부 변경이 다른 클래스에 영향을 덜 미치게 하려고
+
+StudentManager 클래스
+프로그램 주요 흐름을 관리하는 역할을 합니다.
