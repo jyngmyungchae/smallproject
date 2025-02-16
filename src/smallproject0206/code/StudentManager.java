@@ -1,5 +1,9 @@
 package smallproject0206.code;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -18,11 +22,13 @@ public class StudentManager extends StudentDBIO {
     }
     // 각 메뉴 번호와 실행할 작업을 menuChoice 맵에 등록
     private void mainMenu() {
-        menuChoice.put(1, () -> this.inputStudent()); //람다
+        menuChoice.put(1, ()-> this.inputStudent()); //람다
         menuChoice.put(2, this::outputStudent); //메서드 참조
         menuChoice.put(3, this::searchBySno);
         menuChoice.put(4, this::sortStudents);
-        menuChoice.put(5, this::exitApp);
+        menuChoice.put(5, this::backupToFile);
+        menuChoice.put(6, this::exitApp);
+
     }
 
     private void printMenu() {
@@ -30,7 +36,8 @@ public class StudentManager extends StudentDBIO {
         System.out.println("2. view student info");
         System.out.println("3. search student info");
         System.out.println("4. sort student info");
-        System.out.println("5. exit");
+        System.out.println("5. backup to file");
+        System.out.println("6. exit");
         System.out.println("choice menu");
     }
     // printmenu(), 사용자 입력받고 해당 메뉴 실행하는 작업수행
@@ -191,7 +198,7 @@ public class StudentManager extends StudentDBIO {
         }
     }
 
-    //db와 메모리 데이터 삭제
+    //db와 메모리 데이터 삭제 수행
     private void deleteStudent(String sno) {
         studentDAO.delete(sno);
         students.removeIf(s -> s.getSno().equals(sno)); //removeIf사용해서 조건에 맞는 객체 삭제
@@ -259,6 +266,55 @@ public class StudentManager extends StudentDBIO {
     public void sortBySno(List<Student> studentList) {
         studentList.sort(Comparator.comparing(Student::getSno));
         System.out.println("Sorted by sno:");
+    }
+
+    private void backupToFile() {
+        // DB에서 최신 학생 데이터를 가져옴
+        List<Student> studentList = studentDAO.getAllStudents();
+        if (studentList.isEmpty()) {
+            System.out.println("백업할 데이터가 없습니다.");
+            return;
+        }
+
+        // 현재 날짜와 시간을 이용하여 파일명을 생성 (예: students_backup_20250214_153045.csv)
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "students_backup_" + timestamp + ".csv";
+
+        // 새로운 백업 파일을 생성(덮어쓰기가 아닌 새로운 파일로 저장)
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            // 헤더 작성
+            String header = "sno,name,korean,english,math,science,total,average,grade";
+            writer.write(header);
+            writer.newLine();
+
+            // 학생 데이터 기록
+            for (Student s : studentList) {
+                String csvLine = String.format("%s,%s,%d,%d,%d,%d,%d,%.2f,%s",
+                        s.getSno(),
+                        s.getName(),
+                        getSubjectScore(s, "korean"),
+                        getSubjectScore(s, "english"),
+                        getSubjectScore(s, "math"),
+                        getSubjectScore(s, "science"),
+                        s.getTotal(),
+                        s.getAverage(),
+                        s.computeGrade());
+                writer.write(csvLine);
+                writer.newLine();
+            }
+            System.out.println("파일 백업 완료: " + fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // StudentManager 내부 헬퍼 메서드: 특정 과목 점수 추출
+    private int getSubjectScore(Student student, String subjectName) {
+        return student.getSubjects().stream()
+                .filter(subject -> subject.getName().equalsIgnoreCase(subjectName))
+                .mapToInt(Student.Subject::getScore)
+                .findFirst()
+                .orElse(0);
     }
 
     private void exitApp() {

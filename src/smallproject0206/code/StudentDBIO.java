@@ -20,4 +20,17 @@ public class StudentDBIO extends ObjectIO implements StudentIO{
 
     @Override
     public void sortBySno(List<Student> students) {}
+
+    @Override
+    public void save(Student student) {}
+
+    @Override
+    public List<Student> getAllStudents() {
+        return List.of();
+    }
+
+    @Override
+    public void delete(String sno) {
+
+    }
 }
