@@ -1,15 +1,204 @@
+1. 프로젝트 모든 클래스 개요
+
+Student
+학생 도메인 모델로, 학생의 기본 정보와 과목 점수를 보유하며, 총점, 평균, 학점을 계산하는 비즈니스 로직을 포함합니다.
+내부 클래스:
+Subject: 각 과목의 이름과 점수를 저장합니다.
+StudentBuilder: 빌더 패턴을 이용해 Student 객체를 안정적으로 생성합니다.
+
+StudentIO (인터페이스)
+학생 데이터에 대한 CRUD(생성, 조회, 수정, 삭제) 작업에 필요한 메서드를 선언합니다.
+예: save(), getAllStudents(), delete(), updateStudent() 등
+
+StudentDBIO (추상 클래스)
+StudentIO 인터페이스를 상속받은 추상 클래스입니다.
+공통 필드(예: 메모리 내 학생 리스트 등)가 있을 수 있으며, DB 또는 파일 I/O 구현체가 확장할 기반을 제공합니다.
+
+StudentDAO
+Student 데이터에 대해 데이터베이스(DB) 연동 작업을 수행하는 클래스입니다.
+CRUD 작업 및 DB 연결 관련 로직을 구현합니다.
+
+StudentFileIO
+StudentDBIO를 확장한 파일 I/O 전담 클래스로, 싱글턴 패턴을 적용하여 CSV 또는 JSON 형식으로 백업/복원 기능을 수행합니다.
+DB 백업 용도로 파일에 데이터를 저장, 수정(덮어쓰기), 삭제하는 기능을 제공합니다.
+
+StudentManager
+사용자 인터페이스(UI)와 애플리케이션의 흐름을 관리하는 클래스입니다.
+메뉴 출력, 사용자 입력 처리, 입력 검증, 그리고 각 기능(학생 정보 입력/수정, 삭제, 검색, 정렬, 백업)을 실행하는 역할을 합니다.
+내부적으로 StudentDAO를 호출해 DB와 상호작용하며, 백업 시에는 StudentFileIO를 사용합니다.
+메뉴 처리는 Map<Integer, Runnable>과 람다식을 사용해 유연하게 구현되어 있습니다.
+
+2. 클래스별 상세 설명
+
 Student 클래스
-'student'의 정보 (sno,name,subject)와 이 데이터를 바탕으로 한 계산(total,avg,grade)을 관리
-과목들은 클래스 내부 subject 클래스로 정의함
-빌더패턴 이용해서 학생정보 객체 생성 복잡성을 줄임
+필드:
+private String sno;
+학번을 저장합니다.
+private String name;
+학생의 이름을 저장합니다.
+private List<Subject> subjects;
+학생의 각 과목 정보(과목명, 점수)를 담은 리스트입니다.
+
+메서드:
+public String getSno(), getName(), getSubjects()
+각 필드의 값을 반환하는 getter 메서드입니다.
+public int getTotal()
+subjects 리스트의 각 과목 점수를 합산하여 총점을 반환합니다. (for-loop 또는 스트림 사용 가능)
+public double getAverage()
+총점을 과목 수로 나누어 평균 점수를 계산합니다.
+public String computeGrade()
+평균 점수에 따라 A, B, C, D, F 등 학점을 결정합니다.
+@Override public String toString()
+학생의 모든 정보를 포맷팅하여 문자열로 반환합니다.
+→ 내부에서 subjects 리스트의 각 Subject 객체의 toString() 결과를 포함합니다.
+
+내부 클래스:
+Subject
+필드: name, score
+메서드: getter와 toString() 오버라이드 (예: {name='korean', score=90})
+StudentBuilder
+체이닝 방식으로 sno, name, 과목들을 설정하여 최종적으로 Student 객체를 생성합니다.
+
+StudentIO 인터페이스
+목적:
+학생 데이터에 대한 CRUD 작업에 필요한 메서드를 선언합니다.
+StudentDAO, StudentFileIO 등 다양한 구현체가 이 인터페이스를 구현하여 사용될 수 있습니다.
+StudentDBIO (추상 클래스)
+필드:
+public List<Student> students = new ArrayList<>();
+(옵션) 메모리 내 캐시로 사용할 학생 리스트.
+메서드:
+추상 메서드로 StudentIO의 메서드들을 선언합니다.
+(예: save(), getAllStudents(), delete(), updateStudent())
 
 StudentDAO 클래스
-DB와의 연동을 담당
-주요 기능은 db연결을 관리하고, crud(create,read,update,delete)작업을 함
+필드:
+DB 연결 정보 상수 (URL, USERNAME, PASSWORD).
+메서드:
+public void save(Student student)
+→ Student 객체를 DB에 INSERT 합니다.
+public List<Student> getAllStudents()
+→ DB에서 모든 학생 데이터를 조회하여 List<Student>로 반환합니다.
+public Student findStudentBySno(String sno)
+→ 학번을 기준으로 DB에서 특정 학생을 조회합니다.
+public void delete(String sno)
+→ 학번에 해당하는 학생 데이터를 DB에서 삭제합니다.
+public void updateStudent(Student student)
+→ 전체 학생 정보를 업데이트합니다.
+(필요 시 updateStudentScores(Student student) 등 추가 가능)
+내부 헬퍼 메서드: getSubjectScore(Student student, String subjectName)
+→ Student 객체에서 특정 과목의 점수를 추출합니다.
+설계 의도:
+DB와의 CRUD 작업을 전담하여, 도메인 모델(Student)과 데이터 저장소(DB) 사이의 결합도를 낮춥니다.
 
-student, studentdao 클래스를 분리한 이유는
-student클래스는 학생 데이터를 표현하고, studentdao는 데이터 저장 및 조회와 관련된 작업에 집중시킴
-그로인한 효과는 각 클래스 내부 변경이 다른 클래스에 영향을 덜 미치게 하려고
+StudentFileIO 클래스
+필드:
+private static final StudentFileIO INSTANCE
+→ 싱글턴 패턴을 적용하여 단일 인스턴스를 유지합니다.
+private static final String FILE_PATH
+→ CSV(또는 JSON) 파일의 경로를 지정합니다.
+메서드:
+public static StudentFileIO getInstance()
+→ 외부에서 단일 인스턴스를 가져오는 메서드.
+public void save(Student student)
+→ CSV 형식으로 학생 데이터를 파일에 추가(append)합니다.
+public List<Student> getAllStudents()
+→ 파일을 읽어 CSV 데이터를 파싱하여 Student 객체 리스트로 반환합니다.
+→ 헤더(필드명)는 건너뛰거나 처리합니다.
+public void delete(String sno)
+→ 파일 내에서 특정 학번의 레코드를 제거하고, 나머지 데이터를 새 파일로 덮어씁니다.
+public void updateStudent(Student student)
+→ delete 후 save 방식으로 업데이트를 수행합니다.
+public void updateStudentRecord(String sno, Student updatedStudent)
+→ CSV 파일의 특정 레코드를 찾아 수정(덮어쓰기)합니다.
+내부 헬퍼 메서드: getSubjectScore(Student student, String subjectName)
+→ Student 객체에서 해당 과목 점수를 추출합니다.
+설계 의도:
+DB 백업 또는 별도의 파일 저장/복원 용도로 파일 I/O 작업을 수행합니다.
+CSV 파일에 헤더를 포함하여 가독성을 높이고, 매번 새로운 백업 파일을 생성하는 기능도 구현할 수 있습니다.
 
 StudentManager 클래스
-프로그램 주요 흐름을 관리하는 역할을 합니다.
+필드:
+private final Scanner scanner
+→ 사용자 입력을 위한 Scanner.
+private final StudentDAO studentDAO
+→ DB 연동을 위한 DAO 객체.
+private static final Pattern SNO_PATTERN, NAME_PATTERN
+→ 입력값 검증을 위한 정규식 패턴.
+private final Map<Integer, Runnable> menuChoice
+→ 메뉴 번호와 해당 동작을 매핑한 Map.
+메서드:
+메인 메뉴 관련:
+private void mainMenu()
+→ 메뉴 옵션들을 Map에 등록합니다.
+private void printMenu()
+→ 메뉴를 콘솔에 출력합니다.
+public void run()
+→ 무한 루프 내에서 사용자 입력을 받아, 메뉴에 매핑된 동작을 실행합니다.
+private void exitApp()
+→ 프로그램을 종료합니다.
+입력 검증:
+private String readValidatedString(String prompt, Pattern pattern, String errorMessage)
+→ 올바른 문자열 입력을 받을 때까지 반복합니다.
+private int readValidatedInt(String prompt, int min, int max)
+→ 숫자 입력을 받아 유효 범위 내인지 확인합니다.
+학생 정보 처리:
+public void inputStudent()
+→ 신규 학생 입력 및 기존 학생 수정 기능을 제공합니다.
+public void outputStudent()
+→ DB에서 학생 데이터를 조회하여 출력합니다.
+public void deleteStudentInfo()
+→ 학생 정보를 출력한 후, 삭제할 학생의 학번을 받아 삭제합니다.
+public void searchBySno()
+→ 학번 기준으로 학생 정보를 검색하여 출력합니다.
+public void sortStudents()
+→ DB에서 최신 학생 데이터를 불러와 정렬 기준(총점, 학번)에 따라 정렬한 후 출력합니다.
+백업 기능:
+private void backupToFileJSON() (또는 CSV 백업)
+→ DB 데이터를 JSON(또는 CSV) 형식으로 백업하는 기능을 구현하여, 파일명에 날짜/시간을 포함한 새 파일로 저장합니다.
+내부 헬퍼 메서드:
+private int getSubjectScore(Student student, String subjectName)
+→ 학생 객체에서 특정 과목의 점수를 추출합니다.
+설계 의도:
+사용자 인터페이스와 데이터 처리 흐름을 한 곳에 모아, 각 기능(입력, 수정, 삭제, 검색, 정렬, 백업)을 호출하고 관리합니다.
+메뉴 처리는 Map과 람다식을 사용하여 확장성과 가독성을 높였습니다.
+DB와 파일 I/O 모두와의 연동을 통해 데이터 백업, 복원, 수정 등 다양한 기능을 지원합니다.
+
+3. 코드를 작성하면서 중요하게 여긴 부분
+관심사의 분리:
+도메인 모델(Student), 데이터 접근(StudentDAO, StudentFileIO), 사용자 인터페이스(StudentManager)를 각기 다른 클래스에 분리하여, 한 영역의 변경이 다른 영역에 영향을 주지 않도록 설계하였습니다.
+인터페이스 추상화:
+StudentIO 인터페이스를 통해 DB와 파일 I/O 기능을 동일한 시그니처로 구현함으로써, 두 구현체를 쉽게 교체하거나 동시에 사용할 수 있게 하였습니다.
+빌더 패턴 사용:
+Student 객체 생성 시 빌더 패턴을 사용하여, 가독성과 안정성을 높였습니다.
+입력 검증 및 예외 처리:
+사용자 입력을 받기 전 정규식을 통한 검증과 예외 처리를 통해, 잘못된 입력이 시스템에 영향을 주지 않도록 하였습니다.
+메뉴 처리 방식 개선:
+Map<Integer, Runnable>과 람다식을 활용하여 메뉴 선택과 기능 호출을 깔끔하게 분리하고, 확장 가능하도록 설계하였습니다.
+파일 I/O 백업:
+JSON(또는 CSV) 형식으로 데이터를 백업할 때, 백업 파일명에 날짜와 시간을 포함시켜, 백업 이력을 관리하기 쉽게 하였습니다.
+
+4. 발표 후 예상 질문
+객체지향 설계 관련:
+"왜 Student와 StudentDAO를 분리했나요?"
+→ 관심사의 분리와 단일 책임 원칙을 따르기 위해 도메인 모델과 데이터 접근 로직을 분리했습니다.
+"빌더 패턴을 사용한 이유는 무엇인가요?"
+→ 객체 생성 시 명시적인 필드 설정을 통해 코드 가독성과 안정성을 높이기 위해 사용했습니다.
+인터페이스 및 추상 클래스 관련:
+"StudentIO 인터페이스와 StudentDBIO 추상 클래스를 사용한 이유는?"
+→ DB와 파일 I/O 구현체를 동일한 인터페이스로 관리함으로써, 서로 쉽게 교체하고 확장할 수 있도록 했습니다.
+파일 I/O 백업 기능 관련:
+"백업 파일명에 날짜와 시간을 포함시킨 이유는 무엇인가요?"
+→ 백업 이력을 관리하고, 이전 백업 데이터가 덮어쓰여지지 않도록 하기 위해 날짜/시간 정보를 포함시켰습니다.
+"JSON 형식으로 백업하는 이유는?"
+→ JSON은 사람이 읽기 쉽고, 계층적 데이터 구조를 명확하게 표현할 수 있어, CSV보다 가독성이 좋습니다.
+메뉴 처리 및 사용자 인터페이스 관련:
+"Map<Integer, Runnable>을 사용한 메뉴 처리 방식의 장점은 무엇인가요?"
+→ 메뉴 옵션과 동작을 분리하여, 새로운 메뉴 옵션 추가나 변경이 쉬워지고 코드의 가독성이 높아집니다.
+"사용자 입력 검증을 어떻게 처리했나요?"
+→ 정규식과 반복문을 사용하여 올바른 입력이 들어올 때까지 재입력을 요구하는 방식으로 구현했습니다.
+프로젝트 확장성 및 유지보수:
+"DB와 파일 I/O 백업 기능 외에 다른 데이터 소스로 확장할 수 있나요?"
+→ StudentIO 인터페이스를 사용하여, 다른 데이터 소스(예: XML, REST API 등)로의 확장이 용이합니다.
+"예외 처리와 리소스 관리는 어떻게 처리했나요?"
+→ try-with-resources 구문을 사용하여 파일 및 DB 자원 해제를 보장하고, 각 메서드에서 예외 상황에 대한 처리를 수행했습니다.
