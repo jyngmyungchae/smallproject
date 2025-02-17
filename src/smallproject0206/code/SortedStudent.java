@@ -1,6 +1,5 @@
 package smallproject0206.code;
 
-
 import java.util.List;
 
 /**

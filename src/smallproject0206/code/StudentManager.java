@@ -1,6 +1,5 @@
 package smallproject0206.code;
 
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

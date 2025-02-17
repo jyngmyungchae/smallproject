@@ -1,6 +1,5 @@
 package smallproject0206.code;
 
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
