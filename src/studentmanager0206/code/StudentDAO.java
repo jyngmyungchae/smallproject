@@ -1,4 +1,4 @@
-package smallproject0206.code;
+package studentmanager0206.code;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -1,4 +1,4 @@
-package smallproject0206.code;
+package studentmanager0206.code;
 
 import java.io.*;
 import java.util.ArrayList;

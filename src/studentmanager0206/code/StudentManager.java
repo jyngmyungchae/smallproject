@@ -1,4 +1,4 @@
-package smallproject0206.code;
+package studentmanager0206.code;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -72,6 +72,7 @@ public class StudentManager extends StudentDBIO {
                 action.run();
             } else {
                 System.out.println("재입력");
+
             }
         }
     }
