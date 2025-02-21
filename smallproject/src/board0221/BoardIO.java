@@ -24,10 +24,15 @@ public class BoardIO {
      * </ul>
      */
     public void displayMenu() {
-        System.out.println("1. Create");
-        System.out.println("2. Read");
-        System.out.println("3. Clear");
-        System.out.println("4. Exit");
+        String line = "-".repeat(50); // 50자의 구분선
+        System.out.println("\n" + "-".repeat(50));
+        System.out.printf("%-5s %-30s%n", "No", "Option");
+        System.out.println(line);
+        System.out.printf("%-5s %-30s%n", "1.", "Create (게시글 작성)");
+        System.out.printf("%-5s %-30s%n", "2.", "Read (게시글 조회 및 수정/삭제)");
+        System.out.printf("%-5s %-30s%n", "3.", "Clear (모든 게시글 삭제)");
+        System.out.printf("%-5s %-30s%n", "4.", "Exit (프로그램 종료)");
+        System.out.println("-".repeat(50));
         System.out.print("Select menu: ");
     }
 
@@ -76,10 +81,19 @@ public class BoardIO {
      * @param boards 출력할 {@code Board} 객체 리스트.
      */
     public void displayBoards(List<Board> boards) {
-        if (boards.isEmpty()) {
-            System.out.println("doesn't exist");
-        } else {
-            boards.forEach(System.out::println); // Board 객체의 toString() 메서드 호출하여 출력
+        String line = "-".repeat(50); // 50자의 구분선
+        System.out.println("\n" + "-".repeat(50));
+        System.out.printf("%-5s %-10s %-12s %-20s%n", "bno", "writer", "date", "title");
+        System.out.println(line);
+
+        for (Board board : boards) {
+            System.out.printf("%-5s %-10s %-12s %-20s%n",
+                    board.getBno(),
+                    board.getBwriter(),
+                    new java.text.SimpleDateFormat("yyyy.MM.dd").format(board.getBdate()),
+                    "'" + board.getBtitle() + "'");
         }
+
+        System.out.println("-".repeat(50));
     }
 }

@@ -166,14 +166,14 @@ public class BoardManager implements BoardService {
             io.displayMessage("doesn’t exist bno " + bno);
             return;
         }
-        String action = io.prompt("u 입력 = 수정\nd 입력 = 삭제\n나머지 키 = exit");
+        String action = io.prompt("u 입력 = 수정\nd 입력 = 삭제\n나머지 키 = exit\n");
         if (action.equalsIgnoreCase("u")) {
             String newContent = io.prompt("새로운 내용 : ");
             updateBoard(bno, newContent);
-            io.displayMessage("updated");
+            io.displayMessage("updated "+ (bno));
         } else if (action.equalsIgnoreCase("d")) {
             deleteBoard(bno);
-            io.displayMessage("deleted");
+            io.displayMessage("deleted "+ (bno));
         } else {
             io.displayMessage("exit");
         }
