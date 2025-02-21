@@ -32,16 +32,33 @@ public class Board {
         this.bdate = builder.bdate;
     }
 
-    // 각 필드에 대한 getter 메서드들
+    /**
+     * @return 게시글 번호
+     */
     public String getBno() { return bno; }
+
+    /**
+     * @return 게시글 제목
+     */
     public String getBtitle() { return btitle; }
+
+    /**
+     * @return 게시글 내용
+     */
     public String getBcontent() { return bcontent; }
+
+    /**
+     * @return 게시글 작성자
+     */
     public String getBwriter() { return bwriter; }
+
+    /**
+     * @return 게시글 작성일
+     */
     public Date getBdate() { return bdate; }
 
     /**
-     * withBno 메서드는 현재 Board 객체의 데이터를 그대로 유지하면서,
-     * 새로운 게시글 번호(newBno)를 가진 새로운 Board 객체를 생성하여 반환합니다.
+     * 기존 Board 객체의 데이터를 유지하면서 새로운 게시글 번호를 적용한 새로운 Board 객체를 생성합니다.
      * (불변 객체 특성상 기존 객체를 변경하지 않고 새 인스턴스를 만듦)
      *
      * @param newBno 새로운 게시글 번호
@@ -59,20 +76,16 @@ public class Board {
 
     /**
      * BoardBuilder 클래스는 Builder 패턴을 이용하여 Board 객체를 생성하는 데 도움을 줍니다.
-     * 각 메서드는 해당 필드를 설정한 후 현재 Builder 인스턴스를 반환하여 메서드 체이닝을 가능하게 합니다.
      */
     public static class BoardBuilder {
-        // 빌더 내부 필드들 (설정할 값들을 임시 저장)
         private String bno;
         private String btitle;
         private String bcontent;
         private String bwriter;
-        // 기본값: 객체 생성 시의 현재 날짜
-        private Date bdate = new Date();
+        private Date bdate = new Date(); // 기본값: 현재 날짜
 
         /**
-         * bno 메서드는 게시글 번호를 설정합니다.
-         *
+         * 게시글 번호를 설정합니다.
          * @param bno 게시글 번호
          * @return 현재 BoardBuilder 인스턴스 (메서드 체이닝 지원)
          */
@@ -80,9 +93,9 @@ public class Board {
             this.bno = bno;
             return this;
         }
+
         /**
-         * btitle 메서드는 게시글 제목을 설정합니다.
-         *
+         * 게시글 제목을 설정합니다.
          * @param btitle 게시글 제목
          * @return 현재 BoardBuilder 인스턴스
          */
@@ -90,9 +103,9 @@ public class Board {
             this.btitle = btitle;
             return this;
         }
+
         /**
-         * bcontent 메서드는 게시글 내용을 설정합니다.
-         *
+         * 게시글 내용을 설정합니다.
          * @param bcontent 게시글 내용
          * @return 현재 BoardBuilder 인스턴스
          */
@@ -100,9 +113,9 @@ public class Board {
             this.bcontent = bcontent;
             return this;
         }
+
         /**
-         * bwriter 메서드는 게시글 작성자를 설정합니다.
-         *
+         * 게시글 작성자를 설정합니다.
          * @param bwriter 게시글 작성자
          * @return 현재 BoardBuilder 인스턴스
          */
@@ -110,9 +123,9 @@ public class Board {
             this.bwriter = bwriter;
             return this;
         }
+
         /**
-         * bdate 메서드는 게시글 작성일을 설정합니다.
-         *
+         * 게시글 작성일을 설정합니다.
          * @param bdate 게시글 작성일
          * @return 현재 BoardBuilder 인스턴스
          */
@@ -120,9 +133,9 @@ public class Board {
             this.bdate = bdate;
             return this;
         }
+
         /**
-         * build 메서드는 현재까지 설정된 값을 사용하여 새로운 Board 객체를 생성합니다.
-         *
+         * 설정된 값을 기반으로 새로운 Board 객체를 생성합니다.
          * @return 생성된 Board 객체
          */
         public Board build() {
@@ -131,7 +144,7 @@ public class Board {
     }
 
     /**
-     * toString 메서드는 Board 객체의 주요 정보를 문자열 형태로 반환합니다.
+     * Board 객체의 주요 정보를 문자열 형태로 반환합니다.
      *
      * @return Board 객체의 문자열 표현
      */
