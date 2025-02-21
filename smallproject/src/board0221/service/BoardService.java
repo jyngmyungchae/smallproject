@@ -1,4 +1,6 @@
-package board0221;
+package board0221.service;
+
+import board0221.model.Board;
 
 import java.util.List;
 import java.util.Optional;

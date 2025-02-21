@@ -1,4 +1,6 @@
-package board0221;
+package board0221.repository;
+
+import board0221.model.Board;
 
 import java.util.*;
 

@@ -1,4 +1,9 @@
-package board0221;
+package board0221.controller;
+
+import board0221.io.BoardIO;
+import board0221.model.Board;
+import board0221.repository.BoardDAO;
+import board0221.service.BoardService;
 
 import java.util.HashMap;
 import java.util.Map;

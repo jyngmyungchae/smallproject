@@ -1,5 +1,7 @@
 package board0221;
 
+import board0221.controller.BoardManager;
+
 /**
  * {@code Main} 클래스는 게시판 애플리케이션을 실행하는 진입점(entry point)입니다.
  * <p>

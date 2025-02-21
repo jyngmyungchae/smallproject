@@ -1,4 +1,6 @@
-package board0221;
+package board0221.io;
+
+import board0221.model.Board;
 
 import java.util.List;
 import java.util.Scanner;
