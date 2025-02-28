@@ -76,6 +76,19 @@ public class StudentManager extends StudentDBIO {
             }
         }
     }
+//    public void run() {
+//        while (true) {
+//            printMenu();
+//            String input = scanner.nextLine().trim();
+//            try {
+//                int choice = Integer.parseInt(input);
+//                Optional.ofNullable(menuChoice.get(choice))
+//                        .ifPresentOrElse(Runnable::run, () -> System.out.println("잘못된 입력입니다. 다시 입력하세요."));
+//            } catch (NumberFormatException e) {
+//                System.out.println("숫자를 입력하세요.");
+//            }
+//        }
+//    }
 
     /**
      * 사용자 입력에 대해 정규식 검증을 수행합니다.

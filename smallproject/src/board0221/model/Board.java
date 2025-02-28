@@ -143,19 +143,4 @@ public class Board {
         }
     }
 
-    /**
-     * Board 객체의 주요 정보를 문자열 형태로 반환합니다.
-     *
-     * @return Board 객체의 문자열 표현
-     */
-    @Override
-    public String toString() {
-        return "Board{" +
-                "bno='" + bno + '\'' +
-                ", btitle='" + btitle + '\'' +
-                ", bcontent='" + bcontent + '\'' +
-                ", bwriter='" + bwriter + '\'' +
-                ", bdate=" + bdate +
-                '}';
-    }
 }
