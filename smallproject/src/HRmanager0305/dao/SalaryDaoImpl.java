@@ -1,4 +1,4 @@
-package HRmanager0227.dao;
+package HRmanager0305.dao;
 
 public class SalaryDaoImpl {
 }
